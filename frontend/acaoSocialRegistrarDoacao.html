@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="CEI_Logo.ico"> <!--Logo-->
+    <link rel="stylesheet" href="style.css">
+    <title>Ação Social - Registrar Doações - CEI</title>
+</head>
+<body>
+    <header id="acaoSocialHeader" class="acaoSocialHeader">
+        <h1>Ação Social</h1>
+        <div id="headerDiv" class="headerDiv"></div>
+        <a href="login.html">
+            <img src="Imagens/Login_Icon_2.png" alt="login" id="headerLoginIcone" class="headerLoginIcone">
+        </a>
+    </header>
+
+    <div id="acaoSocialMenu" class="acaoSocialMenu">
+        <a href="acaoSocialEstoque.html">
+            <button id="acaoSocialMenuEstoque" class="acaoSocialMenuEstoque">
+                Estoque
+            </button>
+        </a>
+        <a href="acaoSocialDoacao.html">
+            <button id="acaoSocialMenuDoacao" class="acaoSocialMenuDoacao">
+                Doação
+            </button>
+        </a>
+        <a href="acaoSocialRegistrarDoacao.html">
+            <button id="acaoSocialMenuRegistroDoacao" class="acaoSocialMenuRegistroDoacao">
+                Registrar Doações
+            </button>
+        </a>
+    </div>
+
+    <h1 id="acaoSocialPaginaNome">
+        Registrar Doações
+    </h1>
+
+    <div id="acaoSocialRegistrarDoacoesDiv" class="acaoSocialRegistrarDoacoesDiv">
+        <div id="div1" class="div1">
+            <p>Doação</p>
+            <input type="text" id="doacaoItem" class="doacaoItem" placeholder="Coloque a Doação (Exemplo: Blusa)">
+        </div>
+        <div id="div2" class="div2">
+            <p>Remetente</p>
+            <input type="text" id="remetente" class="remetente" placeholder="Coloque o nome do doador">
+        </div>
+        <div id="div3" class="div3">
+            <p>Quantidade</p>
+            <input type="text" id="quantidade" class="quantidade" placeholder="Coloque a QTD do item da caixa 'Doação' que foram doados">
+        </div>
+        <div id="div4" class="div4">
+            <p>CPF/CNPJ</p>
+            <input type="text" id="cpfCnpj" class="cpfCnpj" placeholder="Coloque o CPF ou CNPJ do doador (opcional)">
+        </div>
+        <div id="div5" class="div5">
+            <p>Status</p>
+            <select name="status" id="status" class="status">
+                <option value="null"></option>
+                <option value="Recebido">Recebido</option>
+                <option value="Repassado">Repassado</option>
+                <option value="Processado">Processado</option>
+            </select>
+        </div>
+        <div id="div6" class="div6">
+            <p>Data</p>
+            <input type="text" id="data" class="data" placeholder="Coloque o dia que foi dado a doação">
+        </div>
+        <button id="registrarDoacaoBotao" class="registrarDoacaoBotao">Registrar Doação</button>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
