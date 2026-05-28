@@ -21,8 +21,8 @@ def doacao_para_json(doacao):
         "quantidade": doacao.quantidade,
         "cpf_cnpj": doacao.cpf_cnpj or "",
         "status": doacao.status,
-        "data": doacao.data.isoformat(),
-        "criado_em": doacao.criado_em.isoformat(),
+        "data": str(doacao.data),
+        "criado_em": str(doacao.criado_em),
     }
 
 
@@ -73,7 +73,7 @@ def doacao_detalhe(request, doacao_id):
         dados = json.loads(request.body.decode("utf-8"))
         for campo in ["doacao_item", "remetente", "quantidade", "cpf_cnpj", "status", "data"]:
             if campo in dados:
-                setattr(doacao, campo, dados[campo])
+                setattr(doacao, campo, int(dados[campo]) if campo == "quantidade" else dados[campo])
         doacao.save()
         return resposta_cors(JsonResponse(doacao_para_json(doacao)))
     except Exception as erro:
