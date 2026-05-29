@@ -3,6 +3,12 @@
 import os
 import sys
 
+try:
+    import pymysql  # noqa: F401
+    pymysql.install_as_MySQLdb()
+except Exception:
+    pass
+
 
 def main():
     """Run administrative tasks."""
