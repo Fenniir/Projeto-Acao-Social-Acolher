@@ -10,5 +10,6 @@ urlpatterns = [
     path('registrar/', TemplateView.as_view(template_name='acaoSocialRegistrarDoacao.html'), name='registrar_page'),
     path('api/doacoes/', views.doacoes, name='doacoes'),
     path('api/doacoes/<int:id>/', views.doacao_detalhe, name='doacao_detalhe'),
+    path('api/doacoes/<int:id>/repassar/', views.repassar_doacao, name='repassar_doacao'),
     path('api/estoque/', views.estoque, name='estoque'),
 ]
