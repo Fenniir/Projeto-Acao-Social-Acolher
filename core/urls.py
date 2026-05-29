@@ -1,8 +1,14 @@
 from django.urls import path
+from django.views.generic import TemplateView
 from . import views
 
 urlpatterns = [
-    path("doacoes/", views.doacoes, name="doacoes"),
-    path("doacoes/<int:doacao_id>/", views.doacao_detalhe, name="doacao_detalhe"),
-    path("estoque/", views.estoque, name="estoque"),
+    path('', TemplateView.as_view(template_name='index.html'), name='index'),
+    path('login/', TemplateView.as_view(template_name='login.html'), name='login'),
+    path('estoque/', TemplateView.as_view(template_name='acaoSocialEstoque.html'), name='estoque_page'),
+    path('doacao/', TemplateView.as_view(template_name='acaoSocialDoacao.html'), name='doacao_page'),
+    path('registrar/', TemplateView.as_view(template_name='acaoSocialRegistrarDoacao.html'), name='registrar_page'),
+    path('api/doacoes/', views.doacoes, name='doacoes'),
+    path('api/doacoes/<int:id>/', views.doacao_detalhe, name='doacao_detalhe'),
+    path('api/estoque/', views.estoque, name='estoque'),
 ]
