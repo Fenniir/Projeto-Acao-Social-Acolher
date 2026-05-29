@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,52 +9,76 @@
   <link rel="stylesheet" href="style.css">
   <title>Ação Social - Estoque - CEI</title>
 </head>
+
 <body class="bg-light">
-<nav class="navbar navbar-expand-lg navbar-dark app-navbar shadow-sm sticky-top">
-  <div class="container-fluid px-4">
-    <a class="navbar-brand fw-bold fs-3" href="index.html">Ação Social</a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menuPrincipal" aria-controls="menuPrincipal" aria-expanded="false" aria-label="Abrir menu">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="menuPrincipal">
-      <ul class="navbar-nav mx-auto gap-lg-2 my-3 my-lg-0">
-        <li class="nav-item"><a class="nav-link app-nav-pill active" href="acaoSocialEstoque.html">Estoque</a></li>
-        <li class="nav-item"><a class="nav-link app-nav-pill " href="acaoSocialDoacao.html">Doação</a></li>
-        <li class="nav-item"><a class="nav-link app-nav-pill " href="acaoSocialRegistrarDoacao.html">Registrar Doações</a></li>
-      </ul>
-      <a href="login.html" class="btn btn-light rounded-circle p-1 login-icon-link" aria-label="Login">
-        <img src="Imagens/Login_Icon_2.png" alt="Login" class="login-icon">
-      </a>
-    </div>
-  </div>
-</nav>
-<main class="container py-4 py-lg-5 app-page">
-  <section class="card border-0 shadow-sm rounded-4 mb-4">
-    <div class="card-body p-4">
-      <p class="text-primary text-uppercase fw-bold small mb-1 letter-space">Controle de doações</p>
-      <h1 class="display-6 fw-bold mb-2">Estoque</h1>
-      <p class="text-secondary mb-0">Visualize o saldo atual, o total recebido e o que já foi repassado.</p>
-    </div>
-  </section>
-
-  <section class="row g-3 mb-4" aria-label="Status do sistema">
-    <div class="col-6 col-lg-3"><div class="card metric-card h-100 shadow-sm border-0 rounded-4"><div class="card-body"><span class="text-secondary fw-semibold">Total de itens</span><strong id="totalItens" class="d-block fs-1 lh-1 mt-2">0</strong></div></div></div>
-    <div class="col-6 col-lg-3"><div class="card metric-card h-100 shadow-sm border-0 rounded-4"><div class="card-body"><span class="text-secondary fw-semibold">Total recebido</span><strong id="totalRecebido" class="d-block fs-1 lh-1 mt-2">0</strong></div></div></div>
-    <div class="col-6 col-lg-3"><div class="card metric-card h-100 shadow-sm border-0 rounded-4"><div class="card-body"><span class="text-secondary fw-semibold">Total repassado</span><strong id="totalRepassado" class="d-block fs-1 lh-1 mt-2">0</strong></div></div></div>
-    <div class="col-6 col-lg-3"><div class="card metric-card metric-green h-100 shadow-sm border-0 rounded-4"><div class="card-body"><span class="text-secondary fw-semibold">Saldo geral</span><strong id="saldoGeral" class="d-block fs-1 lh-1 mt-2">0</strong></div></div></div>
-  </section>
-
-  <section class="card border-0 shadow-sm rounded-4">
-    <div class="card-body p-4">
-      <div class="d-flex flex-column flex-md-row justify-content-between gap-3 mb-4">
-        <h2 class="h4 fw-bold mb-0">Itens cadastrados</h2>
-        <input id="buscaItens" class="form-control app-search" type="search" placeholder="Buscar item...">
+  <nav class="navbar navbar-expand-lg navbar-dark app-navbar shadow-sm sticky-top">
+    <div class="container-fluid px-4">
+      <a class="navbar-brand fw-bold fs-3" href="index.html">Projeto Acolher</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menuPrincipal"
+        aria-controls="menuPrincipal" aria-expanded="false" aria-label="Abrir menu">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="menuPrincipal">
+        <ul class="navbar-nav mx-auto gap-lg-2 my-3 my-lg-0">
+          <li class="nav-item"><a class="nav-link app-nav-pill active" href="acaoSocialEstoque.html">Estoque</a></li>
+          <li class="nav-item"><a class="nav-link app-nav-pill " href="acaoSocialDoacao.html">Doação</a></li>
+          <li class="nav-item"><a class="nav-link app-nav-pill " href="acaoSocialRegistrarDoacao.html">Registrar
+              Doações</a></li>
+        </ul>
+        <a href="login.html" class="btn btn-light rounded-circle p-1 login-icon-link" aria-label="Login">
+          <img src="Imagens/Login_Icon_2.png" alt="Login" class="login-icon">
+        </a>
       </div>
-      <div id="acaoSocialEstoqueScrollbar" class="vstack gap-3"></div>
     </div>
-  </section>
-</main>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="script.js"></script>
+  </nav>
+  <main class="container py-4 py-lg-5 app-page">
+    <section class="card border-0 shadow-sm rounded-4 mb-4">
+      <div class="card-body p-4">
+        <p class="text-primary text-uppercase fw-bold small mb-1 letter-space">Controle de doações</p>
+        <h1 class="display-6 fw-bold mb-2">Estoque</h1>
+        <p class="text-secondary mb-0">Visualize o saldo atual, o total recebido e o que já foi repassado.</p>
+      </div>
+    </section>
+
+    <section class="row g-3 mb-4" aria-label="Status do sistema">
+      <div class="col-6 col-lg-3">
+        <div class="card metric-card h-100 shadow-sm border-0 rounded-4">
+          <div class="card-body"><span class="text-secondary fw-semibold">Total de itens</span><strong id="totalItens"
+              class="d-block fs-1 lh-1 mt-2">0</strong></div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="card metric-card h-100 shadow-sm border-0 rounded-4">
+          <div class="card-body"><span class="text-secondary fw-semibold">Total recebido</span><strong
+              id="totalRecebido" class="d-block fs-1 lh-1 mt-2">0</strong></div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="card metric-card h-100 shadow-sm border-0 rounded-4">
+          <div class="card-body"><span class="text-secondary fw-semibold">Total repassado</span><strong
+              id="totalRepassado" class="d-block fs-1 lh-1 mt-2">0</strong></div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="card metric-card metric-green h-100 shadow-sm border-0 rounded-4">
+          <div class="card-body"><span class="text-secondary fw-semibold">Saldo geral</span><strong id="saldoGeral"
+              class="d-block fs-1 lh-1 mt-2">0</strong></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card border-0 shadow-sm rounded-4">
+      <div class="card-body p-4">
+        <div class="d-flex flex-column flex-md-row justify-content-between gap-3 mb-4">
+          <h2 class="h4 fw-bold mb-0">Itens cadastrados</h2>
+          <input id="buscaItens" class="form-control app-search" type="search" placeholder="Buscar item...">
+        </div>
+        <div id="acaoSocialEstoqueScrollbar" class="vstack gap-3"></div>
+      </div>
+    </section>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="script.js"></script>
 </body>
+
 </html>
