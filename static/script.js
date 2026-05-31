@@ -79,8 +79,15 @@ async function apiFetch(caminho, metodo, dados) {
 
   let resposta = await fetch(API_BASE_URL + caminho, opcoes);
 
+  if (resposta.status === 401) {
+    window.location.href = "/login/";
+    return;
+  }
+
   if (!resposta.ok) {
-    throw new Error("Erro ao conectar com o backend.");
+    let dadosErro = null;
+    try { dadosErro = await resposta.json(); } catch (e) {}
+    throw new Error(dadosErro && dadosErro.erro ? dadosErro.erro : "Erro ao conectar com o backend.");
   }
 
   return await resposta.json();
@@ -1018,27 +1025,33 @@ function prepararLoginSimples() {
     return;
   }
 
-  formulario.addEventListener("submit", function (evento) {
+  formulario.addEventListener("submit", async function (evento) {
     evento.preventDefault();
 
-    let email = document.getElementById("loginUsuarioEmail").value.trim();
+    let usuario = document.getElementById("loginUsuario").value.trim();
     let senha = document.getElementById("loginUsuarioSenha").value.trim();
     let mensagem = document.getElementById("loginMensagem");
 
-    if (!email || !senha) {
+    if (!usuario || !senha) {
       mensagem.textContent = "Preencha usuário e senha.";
       mensagem.className = "text-danger text-center fw-semibold mt-3 mb-0";
       return;
     }
 
-    localStorage.setItem("usuarioLogado", email);
+    try {
+      await apiFetch("/login/", "POST", { usuario: usuario, senha: senha });
 
-    mensagem.textContent = "Login feito com sucesso.";
-    mensagem.className = "text-success text-center fw-semibold mt-3 mb-0";
+      mensagem.textContent = "Login feito com sucesso.";
+      mensagem.className = "text-success text-center fw-semibold mt-3 mb-0";
 
-    setTimeout(function () {
-      window.location.href = "/";
-    }, 700);
+      setTimeout(function () {
+        window.location.href = "/";
+      }, 700);
+
+    } catch (erro) {
+      mensagem.textContent = "Usuário ou senha incorretos.";
+      mensagem.className = "text-danger text-center fw-semibold mt-3 mb-0";
+    }
   });
 }
 

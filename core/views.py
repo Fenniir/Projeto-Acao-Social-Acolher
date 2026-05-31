@@ -1,14 +1,71 @@
 import json
+from functools import wraps
 from django.http import JsonResponse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
+from django.contrib.auth import authenticate, login as auth_login
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
 from .models import Doacao
 
 
+<<<<<<< HEAD
 LIMITE_DESCRICAO = 250
 
 
+=======
+# ── Proteção de API ───────────────────────────────────────────────────────────
+
+def api_login_required(view_func):
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return JsonResponse({'erro': 'Não autenticado.'}, status=401)
+        return view_func(request, *args, **kwargs)
+    return wrapper
+
+
+# ── Login ─────────────────────────────────────────────────────────────────────
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def login_view(request):
+    try:
+        body = json.loads(request.body)
+        usuario = body.get('usuario', '')
+        senha = body.get('senha', '')
+        user = authenticate(request, username=usuario, password=senha)
+        if user is not None:
+            auth_login(request, user)
+            return JsonResponse({'ok': True})
+        return JsonResponse({'erro': 'Usuário ou senha incorretos.'}, status=401)
+    except Exception as e:
+        return JsonResponse({'erro': str(e)}, status=400)
+
+
+# ── Páginas protegidas ────────────────────────────────────────────────────────
+
+@login_required(login_url='/login/')
+def pagina_index(request):
+    return render(request, 'index.html')
+
+@login_required(login_url='/login/')
+def pagina_estoque(request):
+    return render(request, 'acaoSocialEstoque.html')
+
+@login_required(login_url='/login/')
+def pagina_doacao(request):
+    return render(request, 'acaoSocialDoacao.html')
+
+@login_required(login_url='/login/')
+def pagina_registrar(request):
+    return render(request, 'acaoSocialRegistrarDoacao.html')
+
+
+# ── Helpers ───────────────────────────────────────────────────────────────────
+
+>>>>>>> a39884bc8a0b8f227db330729273025d8c24d9ad
 def doacao_to_dict(d):
     return {
         'id': d.id,
@@ -25,7 +82,10 @@ def doacao_to_dict(d):
     }
 
 
+# ── API ───────────────────────────────────────────────────────────────────────
+
 @csrf_exempt
+@api_login_required
 @require_http_methods(["GET", "POST"])
 def doacoes(request):
     if request.method == 'GET':
@@ -56,6 +116,7 @@ def doacoes(request):
 
 
 @csrf_exempt
+@api_login_required
 @require_http_methods(["PATCH", "DELETE"])
 def doacao_detalhe(request, id):
     try:
@@ -88,6 +149,7 @@ def doacao_detalhe(request, id):
 
 
 @csrf_exempt
+@api_login_required
 @require_http_methods(["POST"])
 def doacao_repassar(request, id):
     try:
@@ -103,7 +165,7 @@ def doacao_repassar(request, id):
             return JsonResponse({'erro': 'Quantidade inválida.'}, status=400)
 
         if quantidade > doacao.saldo:
-            return JsonResponse({'erro': f'Quantidade maior que o saldo disponível ({doacao.saldo}).'}, status=400)
+            return JsonResponse({'erro': f'Quantidade maior que o saldo ({doacao.saldo}).'}, status=400)
 
         doacao.quantidade_repassada += quantidade
 
@@ -119,6 +181,7 @@ def doacao_repassar(request, id):
         return JsonResponse({'erro': str(e)}, status=400)
 
 
+@api_login_required
 @require_http_methods(["GET"])
 def estoque(request):
     lista = Doacao.objects.all().order_by('-data_registro')
