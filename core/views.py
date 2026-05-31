@@ -1,8 +1,12 @@
 import json
 from django.http import JsonResponse
+from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from .models import Doacao
+
+
+LIMITE_DESCRICAO = 250
 
 
 def doacao_to_dict(d):
@@ -31,15 +35,20 @@ def doacoes(request):
     if request.method == 'POST':
         try:
             body = json.loads(request.body)
+            descricao = body.get('descricao', '')
+
+            if len(descricao) > LIMITE_DESCRICAO:
+                return JsonResponse({'erro': 'A descrição deve ter no máximo 250 caracteres.'}, status=400)
+
             doacao = Doacao.objects.create(
                 doacao_item=body.get('doacao_item', ''),
                 remetente=body.get('remetente', ''),
                 quantidade=body.get('quantidade', 1),
                 cpf_cnpj=body.get('cpf_cnpj', ''),
                 tipo=body.get('tipo', 'Outros'),
-                descricao=body.get('descricao', ''),
+                descricao=descricao,
                 status='Recebido',
-                data=body.get('data'),
+                data=timezone.localdate(),
             )
             return JsonResponse(doacao_to_dict(doacao), status=201)
         except Exception as e:
@@ -62,8 +71,12 @@ def doacao_detalhe(request, id):
             doacao.quantidade = body.get('quantidade', doacao.quantidade)
             doacao.cpf_cnpj = body.get('cpf_cnpj', doacao.cpf_cnpj)
             doacao.tipo = body.get('tipo', doacao.tipo)
-            doacao.descricao = body.get('descricao', doacao.descricao)
-            doacao.data = body.get('data', doacao.data)
+
+            descricao = body.get('descricao', doacao.descricao)
+            if len(descricao) > LIMITE_DESCRICAO:
+                return JsonResponse({'erro': 'A descrição deve ter no máximo 250 caracteres.'}, status=400)
+
+            doacao.descricao = descricao
             doacao.save()
             return JsonResponse(doacao_to_dict(doacao))
         except Exception as e:

@@ -1,4 +1,6 @@
 const API_BASE_URL = "/api";
+const LIMITE_DESCRICAO = 250;
+
 
 // FUNÇÕES BÁSICAS --------------------------------------------------------------------------------
 
@@ -14,6 +16,23 @@ function formatarData(data) {
   }
 
   return data;
+}
+
+function pegarDataHoje() {
+  let hoje = new Date();
+  let ano = hoje.getFullYear();
+  let mes = String(hoje.getMonth() + 1).padStart(2, "0");
+  let dia = String(hoje.getDate()).padStart(2, "0");
+
+  return ano + "-" + mes + "-" + dia;
+}
+
+function mostrarDataAtualNoFormulario() {
+  let campo = document.getElementById("dataAtualTexto");
+
+  if (campo) {
+    campo.textContent = formatarData(pegarDataHoje());
+  }
 }
 
 function atualizarTexto(id, texto) {
@@ -254,7 +273,7 @@ function pegarDadosFormularioDoacao() {
     cpf_cnpj: document.getElementById("cpfCnpj").value.trim(),
     tipo: document.getElementById("tipo").value,
     descricao: document.getElementById("descricao").value.trim(),
-    data: document.getElementById("data").value
+    data: pegarDataHoje()
   };
 }
 
@@ -275,7 +294,7 @@ function validarDoacao(doacao) {
     return false;
   }
 
-  if (doacao.data === "") {
+  if (doacao.descricao.length > LIMITE_DESCRICAO) {
     return false;
   }
 
@@ -296,7 +315,7 @@ function prepararFormularioDoacao() {
     let dados = pegarDadosFormularioDoacao();
 
     if (!validarDoacao(dados)) {
-      mostrarMensagem("Preencha doação, remetente, quantidade, tipo e data.", "erro");
+      mostrarMensagem("Preencha doação, remetente, quantidade e tipo. A descrição deve ter até 250 caracteres.", "erro");
       return;
     }
 
@@ -459,7 +478,6 @@ function abrirModalEdicaoDoacao(doacao) {
   document.getElementById("editarCpfCnpj").value = doacao.cpf_cnpj || "";
   document.getElementById("editarTipo").value = doacao.tipo || "Outros";
   document.getElementById("editarDescricao").value = doacao.descricao || "";
-  document.getElementById("editarData").value = normalizarDataInput(doacao.data);
 
   bootstrap.Modal.getOrCreateInstance(modal).show();
 }
@@ -511,14 +529,10 @@ function criarModalEdicaoDoacao() {
               </select>
             </div>
 
-            <div class="col-md-6">
-              <label class="form-label fw-semibold">Data</label>
-              <input class="form-control" id="editarData" type="date" required>
-            </div>
-
             <div class="col-12">
               <label class="form-label fw-semibold">Descrição</label>
-              <textarea class="form-control" id="editarDescricao" rows="3"></textarea>
+              <textarea class="form-control" id="editarDescricao" rows="3" maxlength="250"></textarea>
+              <small class="text-secondary">Máximo de 250 caracteres.</small>
             </div>
           </div>
 
@@ -558,8 +572,7 @@ function configurarFormularioEdicao(modal) {
       quantidade: Number(document.getElementById("editarQuantidade").value),
       cpf_cnpj: document.getElementById("editarCpfCnpj").value.trim(),
       tipo: document.getElementById("editarTipo").value,
-      descricao: document.getElementById("editarDescricao").value.trim(),
-      data: document.getElementById("editarData").value
+      descricao: document.getElementById("editarDescricao").value.trim()
     };
 
     if (!validarDoacao(dados)) {
@@ -962,10 +975,9 @@ function criarAcessibilidade() {
   `;
 
   let menuLateral = document.querySelector(".app-sidebar");
-  let botaoLogin = document.querySelector(".sidebar-login");
 
-  if (menuLateral && botaoLogin) {
-    menuLateral.insertBefore(caixa, botaoLogin);
+  if (menuLateral) {
+    menuLateral.appendChild(caixa);
   } else {
     document.body.appendChild(caixa);
   }
@@ -1035,6 +1047,7 @@ function prepararLoginSimples() {
 document.addEventListener("DOMContentLoaded", function () {
   aplicarPreferenciasAcessibilidade();
   criarAcessibilidade();
+  mostrarDataAtualNoFormulario();
 
   carregarPainelInicial();
   carregarDoacoes();
