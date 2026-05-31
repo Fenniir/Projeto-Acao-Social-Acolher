@@ -1,6 +1,7 @@
 const API_BASE_URL = "/api";
 const LIMITE_DESCRICAO = 250;
-
+const REGISTROS_POR_PAGINA = 9;
+let paginaAtual = 1;
 
 // FUNÇÕES BÁSICAS --------------------------------------------------------------------------------
 
@@ -86,8 +87,12 @@ async function apiFetch(caminho, metodo, dados) {
 
   if (!resposta.ok) {
     let dadosErro = null;
-    try { dadosErro = await resposta.json(); } catch (e) {}
+    try { dadosErro = await resposta.json(); } catch (e) { }
     throw new Error(dadosErro && dadosErro.erro ? dadosErro.erro : "Erro ao conectar com o backend.");
+  }
+
+  if (resposta.status === 204) {
+    return null;
   }
 
   return await resposta.json();
@@ -114,25 +119,6 @@ function classeStatus(status) {
   }
 
   return "text-bg-secondary";
-}
-
-function normalizarDataInput(data) {
-  if (!data) {
-    return "";
-  }
-
-  let texto = String(data);
-
-  if (texto.includes("T")) {
-    return texto.split("T")[0];
-  }
-
-  if (texto.includes("/")) {
-    let partes = texto.split("/");
-    return partes[2] + "-" + partes[1] + "-" + partes[0];
-  }
-
-  return texto;
 }
 
 // MODAL DE CONFIRMAÇÃO -----------------------------------------------------------------------
@@ -162,7 +148,7 @@ function abrirModalConfirmacao(titulo, texto, funcaoConfirmar) {
               Cancelar
             </button>
 
-            <button type="button" class="btn btn-primary" id="confirmacaoBotao">
+            <button type="button" class="btn btn-outline-danger fw-bold rounded-3" id="confirmacaoBotao">
               Confirmar
             </button>
           </div>
@@ -222,7 +208,7 @@ function abrirModalRepassar(item) {
               Cancelar
             </button>
 
-            <button type="submit" class="btn btn-success fw-semibold">
+            <button type="submit" class="btn btn-outline-success fw-bold rounded-3">
               Confirmar repasse
             </button>
           </div>
@@ -253,8 +239,7 @@ function abrirModalRepassar(item) {
 
         carregarEstoque();
         carregarDoacoes();
-        carregarPainelInicial();
-
+  
       } catch (erro) {
         mostrarMensagem(erro.message, "erro");
       }
@@ -460,14 +445,16 @@ async function carregarDoacoes() {
       corpo.appendChild(criarLinhaDoacao(doacoes[i]));
     }
 
+    paginaAtual = 1;
     ativarBusca();
+    aplicarPaginacao();
 
   } catch (erro) {
     lista.appendChild(criarEstadoVazio("Não foi possível carregar as doações."));
   }
 }
 
-// MODAL DE EDIÇÃO DO ESTOQUE --------------------------------------------------------------------
+// EDIÇÃO DO ESTOQUE --------------------------------------------------------------------
 
 function abrirModalEdicaoDoacao(doacao) {
   let modal = document.getElementById("modalEditarDoacao");
@@ -553,7 +540,7 @@ function criarModalEdicaoDoacao() {
             Cancelar
           </button>
 
-          <button type="submit" class="btn btn-primary fw-semibold">
+          <button type="submit" class="btn btn-outline-primary fw-bold rounded-3">
             Salvar alterações
           </button>
         </div>
@@ -596,7 +583,6 @@ function configurarFormularioEdicao(modal) {
 
       carregarEstoque();
       carregarDoacoes();
-      carregarPainelInicial();
 
     } catch (erro) {
       mostrarMensagem(erro.message, "erro");
@@ -690,11 +676,14 @@ function criarLinhaEstoque(item) {
       "Excluir item",
       "Tem certeza que deseja excluir este item? Use apenas quando o cadastro estiver errado.",
       async function () {
-        await apiFetch("/doacoes/" + item.id + "/", "DELETE");
-        mostrarMensagem("Item excluído com sucesso.");
-        carregarEstoque();
-        carregarDoacoes();
-        carregarPainelInicial();
+        try {
+          await apiFetch("/doacoes/" + item.id + "/", "DELETE");
+          mostrarMensagem("Item excluído com sucesso.");
+          carregarEstoque();
+          carregarDoacoes();
+            } catch (erro) {
+          mostrarMensagem(erro.message, "erro");
+        }
       }
     );
   };
@@ -753,11 +742,95 @@ async function carregarEstoque() {
       corpo.appendChild(criarLinhaEstoque(itens[i]));
     }
 
+    paginaAtual = 1;
     ativarBusca();
+    aplicarPaginacao();
 
   } catch (erro) {
     lista.appendChild(criarEstadoVazio("Não foi possível carregar o estoque."));
   }
+}
+
+// PAGINAÇÃO -------------------------------------------------------------------------
+
+function aplicarPaginacao() {
+  let lista = document.getElementById("acaoSocialEstoqueScrollbar");
+
+  if (!lista) {
+    return;
+  }
+
+  let paginacaoAntiga = lista.querySelector(".paginacao-tabela");
+
+  if (paginacaoAntiga) {
+    paginacaoAntiga.remove();
+  }
+
+  let linhas = lista.querySelectorAll(".record-card");
+  let linhasFiltradas = [];
+
+  for (let i = 0; i < linhas.length; i++) {
+    linhas[i].classList.add("linha-escondida");
+
+    if (linhas[i].getAttribute("data-filtrado") !== "nao") {
+      linhasFiltradas.push(linhas[i]);
+    }
+  }
+
+  let totalPaginas = Math.ceil(linhasFiltradas.length / REGISTROS_POR_PAGINA);
+
+  if (totalPaginas < 1) {
+    totalPaginas = 1;
+  }
+
+  if (paginaAtual > totalPaginas) {
+    paginaAtual = totalPaginas;
+  }
+
+  let inicio = (paginaAtual - 1) * REGISTROS_POR_PAGINA;
+  let fim = inicio + REGISTROS_POR_PAGINA;
+
+  for (let i = inicio; i < fim && i < linhasFiltradas.length; i++) {
+    linhasFiltradas[i].classList.remove("linha-escondida");
+  }
+
+  if (linhasFiltradas.length <= REGISTROS_POR_PAGINA) {
+    return;
+  }
+
+  let div = document.createElement("div");
+  div.className = "paginacao-tabela d-flex justify-content-end align-items-center gap-2 p-3 border-top";
+
+  let botaoAnterior = document.createElement("button");
+  botaoAnterior.type = "button";
+  botaoAnterior.className = "btn btn-outline-danger btn-sm fw-bold rounded-3";
+  botaoAnterior.textContent = "Anterior";
+  botaoAnterior.disabled = paginaAtual === 1;
+
+  botaoAnterior.onclick = function () {
+    paginaAtual--;
+    aplicarPaginacao();
+  };
+
+  let textoPagina = document.createElement("span");
+  textoPagina.className = "fw-semibold small";
+  textoPagina.textContent = "Página " + paginaAtual + " de " + totalPaginas;
+
+  let botaoProximo = document.createElement("button");
+  botaoProximo.type = "button";
+  botaoProximo.className = "btn btn-outline-success btn-sm fw-bold rounded-3";
+  botaoProximo.textContent = "Próximo";
+  botaoProximo.disabled = paginaAtual === totalPaginas;
+
+  botaoProximo.onclick = function () {
+    paginaAtual++;
+    aplicarPaginacao();
+  };
+
+  div.appendChild(botaoAnterior);
+  div.appendChild(textoPagina);
+  div.appendChild(botaoProximo);
+  lista.appendChild(div);
 }
 
 // BUSCA E FILTROS -------------------------------------------------------------------------
@@ -803,11 +876,20 @@ function ativarBusca() {
       let passouTipo = tipo === "" || tipoLinha === tipo;
 
       if (passouBusca && passouStatus && passouTipo) {
-        linha.style.display = "";
+        linha.setAttribute("data-filtrado", "sim");
       } else {
-        linha.style.display = "none";
+        linha.setAttribute("data-filtrado", "nao");
       }
     }
+
+    paginaAtual = 1;
+    aplicarPaginacao();
+  }
+
+  let linhasIniciais = lista.querySelectorAll(".record-card");
+
+  for (let i = 0; i < linhasIniciais.length; i++) {
+    linhasIniciais[i].setAttribute("data-filtrado", "sim");
   }
 
   if (campoBusca) {
@@ -820,93 +902,6 @@ function ativarBusca() {
 
   if (filtroTipo) {
     filtroTipo.onchange = filtrarTabela;
-  }
-}
-
-// PAINEL INICIAL ------------------------------------------------------------------------------
-
-function criarLinhaPainel(doacao) {
-  let linha = document.createElement("div");
-  linha.className = "compact-row";
-
-  let status = doacao.status || "Sem status";
-  let statusClass = classeStatus(status);
-
-  linha.innerHTML = `
-    <div class="compact-main">
-      <strong>${doacao.doacao_item || "Doação sem nome"}</strong>
-      <span>${doacao.remetente || "-"} · ${doacao.tipo || "Outros"}</span>
-    </div>
-
-    <div class="compact-meta">${formatarData(doacao.data)}</div>
-    <span class="badge status-pill ${statusClass}">${status}</span>
-  `;
-
-  return linha;
-}
-
-async function carregarPainelInicial() {
-  let lista = document.getElementById("painelUltimasDoacoes");
-
-  if (!lista) {
-    return;
-  }
-
-  lista.innerHTML = "";
-
-  try {
-    let doacoes = await apiFetch("/doacoes/");
-    let estoque = await apiFetch("/estoque/");
-
-    let totalRepasses = 0;
-
-    for (let i = 0; i < doacoes.length; i++) {
-      totalRepasses += Number(doacoes[i].quantidade_repassada || 0);
-    }
-
-    let itensEstoque = 0;
-    let totalRecebidos = 0;
-    let totalProcessando = 0;
-
-    for (let i = 0; i < estoque.length; i++) {
-      let saldo = Number(estoque[i].saldo || 0);
-      itensEstoque += saldo;
-
-      if (estoque[i].status === "Recebido") {
-        totalRecebidos += saldo;
-      }
-
-      if (estoque[i].status === "Processando") {
-        totalProcessando += saldo;
-      }
-    }
-
-    atualizarTexto("painelTotalDoacoes", doacoes.length);
-    atualizarTexto("painelItensEstoque", itensEstoque);
-    atualizarTexto("painelTotalRepasses", totalRepasses);
-    atualizarTexto("painelRecebidos", totalRecebidos);
-    atualizarTexto("painelProcessando", totalProcessando);
-
-    if (doacoes.length === 0) {
-      atualizarTexto("painelUltimaDoacao", "-");
-      lista.appendChild(criarEstadoVazio("Nenhuma doação registrada ainda."));
-      return;
-    }
-
-    atualizarTexto("painelUltimaDoacao", doacoes[0].doacao_item || "-");
-
-    let limite = 6;
-
-    if (doacoes.length < 6) {
-      limite = doacoes.length;
-    }
-
-    for (let i = 0; i < limite; i++) {
-      lista.appendChild(criarLinhaPainel(doacoes[i]));
-    }
-
-  } catch (erro) {
-    lista.appendChild(criarEstadoVazio("Não foi possível carregar o painel inicial."));
   }
 }
 
@@ -1062,7 +1057,6 @@ document.addEventListener("DOMContentLoaded", function () {
   criarAcessibilidade();
   mostrarDataAtualNoFormulario();
 
-  carregarPainelInicial();
   carregarDoacoes();
   carregarEstoque();
 

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,6 +9,7 @@
   <link rel="stylesheet" href="/static/style.css">
   <title>Estoque - Projeto Acolher</title>
 </head>
+
 <body>
   <div class="app-shell">
     <aside class="app-sidebar">
@@ -22,7 +24,7 @@
         <a class="sidebar-link " href="/registrar/">Registrar doação</a>
         <a class="sidebar-link active" href="/estoque/">Estoque</a>
       </nav>
-</aside>
+    </aside>
 
     <main class="app-page">
       <section class="page-header-card">
@@ -44,7 +46,8 @@
           <h2>Itens cadastrados</h2>
         </div>
         <div class="table-toolbar">
-          <input id="buscaItens" class="form-control app-search" type="search" placeholder="Pesquisar por item, doador, tipo, CPF/CNPJ ou descrição">
+          <input id="buscaItens" class="form-control app-search" type="search"
+            placeholder="Pesquisar por item, doador, tipo, CPF/CNPJ ou descrição">
           <select id="filtroStatus" class="form-select app-filter">
             <option value="">Todos os status</option>
             <option value="Recebido">Recebido</option>
@@ -65,4 +68,5 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="/static/script.js"></script>
 </body>
+
 </html>

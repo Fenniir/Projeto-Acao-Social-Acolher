@@ -8,8 +8,9 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from .models import Doacao
 from django.utils import timezone
+from django.db import models
 
-
+LIMITE_DESCRICAO = 250
 # ── Proteção de API ───────────────────────────────────────────────────────────
 
 def api_login_required(view_func):
@@ -173,5 +174,5 @@ def doacao_repassar(request, id):
 
 @require_http_methods(["GET"])
 def estoque(request):
-    lista = Doacao.objects.all().order_by('-data_registro')
+    lista = Doacao.objects.exclude(status='Repassado').filter(quantidade_repassada__lt=models.F('quantidade')).order_by('-data_registro')
     return JsonResponse([doacao_to_dict(d) for d in lista], safe=False)
