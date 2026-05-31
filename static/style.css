@@ -1,0 +1,715 @@
+:root {
+  --azul: #e85b2a;
+  --laranja: #e85b2a;
+  --coral: #c93330;
+  --salmao: #f08e66;
+  --creme: #fff4ee;
+  --sidebar: #2b1a22;
+  --fundo: #fff7f3;
+  --texto: #2d1d1f;
+  --borda: #f0d2c6;
+  --cinza: #856a63;
+  --bs-primary: #e85b2a;
+  --bs-primary-rgb: 232, 91, 42;
+  --bs-link-color: #c93330;
+  --bs-link-hover-color: #9f2826;
+}
+
+body {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 18% 12%, rgba(240, 142, 102, .42) 0, transparent 30%),
+    radial-gradient(circle at 88% 8%, rgba(201, 51, 48, .24) 0, transparent 34%),
+    linear-gradient(135deg, #fff7f3 0%, #fff1ea 38%, #ffe1d4 68%, #fff7f3 100%);
+  background-attachment: fixed;
+  color: var(--texto);
+  font-size: 14px;
+}
+
+/* Estrutura principal */
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+}
+
+.app-page {
+  width: calc(100% - 230px);
+  margin-left: 230px;
+  padding: 18px;
+}
+
+/* Menu lateral: o Bootstrap não tem um componente pronto para este layout */
+.app-sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  width: 230px;
+  padding: 18px 14px;
+  background: var(--sidebar);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.sidebar-logo,
+.sidebar-link,
+.sidebar-login {
+  color: inherit;
+  text-decoration: none;
+  font-weight: 800;
+  border-radius: .75rem;
+}
+
+.sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: .65rem;
+  padding: .5rem .5rem .9rem;
+  border-bottom: 1px solid rgba(255, 255, 255, .12);
+}
+
+.sidebar-logo img {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+  border-radius: .6rem;
+}
+
+.sidebar-menu {
+  display: grid;
+  gap: .5rem;
+}
+
+.sidebar-link {
+  color: #f8d8c8;
+  padding: .75rem .8rem;
+}
+
+.sidebar-link:hover,
+.sidebar-link.active {
+  color: #fff;
+  background: linear-gradient(135deg, #e85b2a, #c93330);
+}
+
+.sidebar-login {
+  display: block;
+  margin-top: .5rem;
+  padding: .7rem;
+  text-align: center;
+  background: var(--azul);
+}
+
+/* Blocos específicos do projeto. Bootstrap cuida de botões, inputs, alerts e modais */
+.page-header-card,
+.table-panel,
+.form-panel,
+.metric-mini,
+.home-start-card {
+  background: #fff;
+  border: 1px solid var(--borda);
+  border-radius: 1rem;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, .06);
+}
+.page-header-card,
+.table-panel,
+.form-panel,
+.metric-mini,
+.home-start-card {
+  backdrop-filter: blur(6px);
+}
+
+
+.page-header-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.15rem;
+  margin-bottom: .9rem;
+}
+
+.page-kicker {
+  display: block;
+  color: var(--azul);
+  font-size: .72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+
+.page-title {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 800;
+}
+
+.page-subtitle {
+  margin: .25rem 0 0;
+  color: var(--cinza);
+  font-size: .9rem;
+}
+
+.metric-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(120px, 1fr));
+  gap: .75rem;
+  margin-bottom: .9rem;
+}
+
+.metric-strip:has(.metric-mini:nth-child(3):last-child) {
+  grid-template-columns: repeat(3, minmax(140px, 1fr));
+}
+
+.metric-mini {
+  padding: .75rem .9rem;
+}
+
+.metric-mini span {
+  display: block;
+  color: var(--cinza);
+  font-size: .74rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.metric-mini strong {
+  display: block;
+  margin-top: .25rem;
+  font-size: 1.2rem;
+}
+
+/* Área de tabela/planilha */
+.table-panel {
+  overflow: hidden;
+}
+
+.table-title-bar,
+.table-toolbar {
+  border-bottom: 1px solid var(--borda);
+}
+
+.table-title-bar {
+  padding: .8rem 1rem;
+}
+
+.table-title-bar h2 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.table-toolbar {
+  display: grid;
+  grid-template-columns: 1fr 210px 170px;
+  gap: .65rem;
+  padding: .75rem;
+  background: #fffaf7;
+}
+
+.app-search,
+.app-filter {
+  min-height: 36px;
+  font-size: .88rem;
+}
+
+.planilha-wrap {
+  width: 100%;
+  max-height: calc(100vh - 255px);
+  overflow: auto;
+}
+
+.planilha-table {
+  min-width: 1080px;
+  font-size: .84rem;
+}
+
+.planilha-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #fff1ea;
+  color: #6b3a34;
+  font-size: .72rem;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.col-id { width: 58px; color: var(--cinza); }
+.col-item { min-width: 165px; font-weight: 800; }
+.col-desc { min-width: 220px; max-width: 300px; }
+.col-actions { width: 220px; white-space: nowrap; text-align: right; }
+
+.item-subtext {
+  display: block;
+  margin-top: .15rem;
+  color: var(--cinza);
+  font-size: .74rem;
+  font-weight: 600;
+}
+
+.status-pill {
+  min-width: 92px;
+  padding: .35rem .55rem;
+  font-weight: 800;
+  font-size: .76rem;
+}
+
+.btn-table {
+  padding: .32rem .5rem;
+  font-size: .78rem;
+  font-weight: 700;
+}
+
+.msg-sistema {
+  position: fixed;
+  top: 18px;
+  right: 20px;
+  z-index: 1080;
+}
+
+/* Registrar doação */
+.form-panel {
+  padding: 1.25rem;
+}
+
+.full-register-form {
+  width: 100%;
+  max-width: none;
+}
+
+.form-section-title {
+  border-bottom: 1px solid var(--borda);
+  padding-bottom: .75rem;
+  margin-bottom: 1rem;
+}
+
+.form-section-title h2 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.form-section-title p,
+.register-info-line {
+  color: var(--cinza);
+  font-size: .88rem;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: .9rem;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: .65rem;
+  margin-top: 1.1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--borda);
+}
+
+.register-info-line {
+  margin-top: .9rem;
+  padding: .75rem .9rem;
+  border: 1px solid var(--borda);
+  border-radius: .75rem;
+  background: #fffaf7;
+}
+
+/* Página inicial */
+.home-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.home-start-card {
+  width: min(760px, 100%);
+  padding: 2rem;
+  text-align: center;
+}
+
+.home-start-logo img {
+  width: 86px;
+  height: 86px;
+  object-fit: contain;
+  margin-bottom: .9rem;
+}
+
+.home-start-card h1 {
+  margin: 0;
+  font-size: 1.7rem;
+  font-weight: 800;
+}
+
+.home-start-card p {
+  max-width: 560px;
+  margin: .65rem auto 1.5rem;
+  color: var(--cinza);
+}
+
+.home-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: .75rem;
+  text-align: left;
+}
+
+.home-action-card {
+  display: block;
+  padding: 1rem;
+  color: var(--texto);
+  text-decoration: none;
+  background: #fffaf7;
+  border: 1px solid var(--borda);
+  border-radius: .9rem;
+}
+
+.home-action-card:hover,
+.home-action-card.destaque {
+  border-color: #f4b49a;
+  background: #fff1ea;
+  color: var(--texto);
+}
+
+.home-action-card strong,
+.home-action-card span {
+  display: block;
+}
+
+.home-action-card strong {
+  margin-bottom: .25rem;
+}
+
+.home-action-card span {
+  color: var(--cinza);
+  font-size: .82rem;
+}
+
+/* Login */
+.login-bg {
+  background: linear-gradient(135deg, #fff4ee, #fffaf7);
+}
+
+.login-card {
+  width: 100%;
+  max-width: 440px;
+}
+
+.login-logo {
+  width: 78px;
+  height: 78px;
+  object-fit: contain;
+}
+
+/* Acessibilidade */
+body.tema-escuro {
+  --fundo: #2a1519;
+  --texto: #fff7f3;
+  --borda: #6b3a34;
+  --cinza: #d8b4a6;
+  background:
+    radial-gradient(circle at 18% 12%, rgba(232, 91, 42, .26) 0, transparent 32%),
+    radial-gradient(circle at 88% 8%, rgba(201, 51, 48, .32) 0, transparent 36%),
+    linear-gradient(135deg, #1f1114 0%, #2a1519 45%, #3a1d22 100%);
+  background-attachment: fixed;
+  color: var(--texto);
+}
+
+body.tema-escuro .page-header-card,
+body.tema-escuro .table-panel,
+body.tema-escuro .form-panel,
+body.tema-escuro .metric-mini,
+body.tema-escuro .home-start-card,
+body.tema-escuro .home-action-card,
+body.tema-escuro .register-info-line,
+body.tema-escuro .card {
+  background: #2d1d1f;
+  border-color: #6b3a34;
+  color: var(--texto);
+}
+
+body.tema-escuro .table-toolbar,
+body.tema-escuro .planilha-table thead th {
+  background: #231215;
+  border-color: #6b3a34;
+  color: var(--texto);
+}
+
+body.tema-escuro .planilha-table tbody td {
+  background: #2d1d1f;
+  border-color: #6b3a34;
+  color: var(--texto);
+}
+
+body.tema-escuro .form-control,
+body.tema-escuro .form-select,
+body.tema-escuro textarea {
+  background: #2a1519;
+  border-color: #6b3a34;
+  color: #fff7f3;
+}
+
+body.tema-escuro .text-secondary {
+  color: #d8b4a6 !important;
+}
+
+body.fonte-maior { font-size: 16px; }
+body.fonte-extra { font-size: 18px; }
+
+.acessibilidade-box {
+  display: grid;
+  gap: .5rem;
+  margin-top: auto;
+  padding: .65rem;
+  color: #fff;
+  background: rgba(255, 255, 255, .08);
+  border: 1px solid rgba(255, 255, 255, .14);
+  border-radius: .75rem;
+}
+
+.acessibilidade-titulo {
+  color: #ffe3d5;
+  font-size: .76rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.acessibilidade-botoes {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: .4rem;
+}
+
+.acessibilidade-botoes button,
+#acessibilidadeTema {
+  border: 0;
+  border-radius: .6rem;
+  padding: .45rem .5rem;
+  font-weight: 800;
+  font-size: .78rem;
+}
+
+#acessibilidadeTema {
+  background: #fff;
+  color: #2d1d1f;
+}
+
+.acessibilidade-botoes button {
+  background: rgba(255, 255, 255, .16);
+  color: #fff;
+}
+
+.acessibilidade-botoes button.ativo,
+#acessibilidadeTema.ativo {
+  background: #f08e66;
+  color: #2d1d1f;
+}
+
+.login-acessibilidade {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 1000;
+  width: 230px;
+  background: #101a2d;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, .18);
+}
+
+/* Regras de fonte maiores */
+body.fonte-maior .planilha-table,
+body.fonte-maior .app-search,
+body.fonte-maior .app-filter,
+body.fonte-maior .btn-table,
+body.fonte-maior .status-pill,
+body.fonte-maior .item-subtext,
+body.fonte-maior .home-action-card span,
+body.fonte-maior .page-kicker,
+body.fonte-maior .acessibilidade-box button {
+  font-size: 1rem !important;
+}
+
+body.fonte-extra .planilha-table,
+body.fonte-extra .app-search,
+body.fonte-extra .app-filter,
+body.fonte-extra .btn-table,
+body.fonte-extra .status-pill,
+body.fonte-extra .item-subtext,
+body.fonte-extra .home-action-card span,
+body.fonte-extra .page-kicker,
+body.fonte-extra .acessibilidade-box button {
+  font-size: 1.15rem !important;
+}
+
+body.fonte-maior .page-title,
+body.fonte-maior .home-start-card h1 { font-size: 1.8rem !important; }
+body.fonte-extra .page-title,
+body.fonte-extra .home-start-card h1 { font-size: 2.15rem !important; }
+body.fonte-maior .metric-mini strong { font-size: 1.45rem; }
+body.fonte-extra .metric-mini strong { font-size: 1.7rem; }
+body.fonte-maior .sidebar-link,
+body.fonte-maior .sidebar-login,
+body.fonte-maior .sidebar-logo { font-size: 1.08rem !important; }
+body.fonte-extra .sidebar-link,
+body.fonte-extra .sidebar-login,
+body.fonte-extra .sidebar-logo { font-size: 1.22rem !important; }
+
+/* Responsivo */
+@media (max-width: 900px) {
+  .app-shell { display: block; }
+  .app-sidebar {
+    position: static;
+    width: 100%;
+    min-height: auto;
+    border-radius: 0 0 1rem 1rem;
+  }
+  .sidebar-menu { grid-template-columns: repeat(2, 1fr); }
+  .app-page { width: 100%; margin-left: 0; padding: .9rem; }
+  .metric-strip,
+  .metric-strip:has(.metric-mini:nth-child(3):last-child) { grid-template-columns: repeat(2, 1fr); }
+  .table-toolbar,
+  .form-grid,
+  .home-actions { grid-template-columns: 1fr; }
+  .login-acessibilidade { position: static; width: min(100%, 440px); margin: -24px auto 18px; }
+}
+
+
+/* Paleta CEI: ajustes sobre o Bootstrap */
+.btn-primary,
+.sidebar-login {
+  --bs-btn-bg: var(--laranja);
+  --bs-btn-border-color: var(--laranja);
+  --bs-btn-hover-bg: var(--coral);
+  --bs-btn-hover-border-color: var(--coral);
+  --bs-btn-active-bg: var(--coral);
+  --bs-btn-active-border-color: var(--coral);
+  background: linear-gradient(135deg, var(--laranja), var(--coral));
+  border-color: transparent;
+}
+
+.btn-outline-primary {
+  --bs-btn-color: var(--coral);
+  --bs-btn-border-color: var(--salmao);
+  --bs-btn-hover-bg: var(--laranja);
+  --bs-btn-hover-border-color: var(--laranja);
+  --bs-btn-active-bg: var(--coral);
+  --bs-btn-active-border-color: var(--coral);
+}
+
+.text-primary,
+.page-kicker {
+  color: var(--coral) !important;
+}
+
+.app-sidebar {
+  background: linear-gradient(180deg, #2b1a22 0%, #3a2024 100%);
+}
+
+.sidebar-logo img {
+  background: linear-gradient(135deg, var(--laranja), var(--salmao));
+}
+
+.sidebar-link:hover,
+.sidebar-link.active {
+  background: linear-gradient(135deg, var(--laranja), var(--coral));
+}
+
+.page-header-card {
+  background: linear-gradient(135deg, #fffaf7, #fff1ea);
+}
+
+.metric-mini strong,
+.page-title,
+.home-start-card h1,
+.table-title-bar h2,
+.form-section-title h2 {
+  color: var(--texto);
+}
+
+.metric-mini {
+  border-top: 3px solid rgba(232, 91, 42, .55);
+}
+
+.planilha-table thead th {
+  background: #fff1ea;
+  color: #5c2d29;
+}
+
+.status-pill.text-bg-success {
+  background-color: #2f9e66 !important;
+}
+
+.status-pill.text-bg-warning {
+  background-color: #f5b63f !important;
+  color: #2d1d1f !important;
+}
+
+.status-pill.text-bg-primary {
+  background-color: var(--coral) !important;
+}
+
+.home-action-card:hover,
+.home-action-card.destaque {
+  border-color: #f4b49a;
+  background: linear-gradient(135deg, #fff4ee, #ffe6da);
+}
+
+.login-bg {
+  background: radial-gradient(circle at top, #f08e66 0%, #fff4ee 45%, #fff7f3 100%);
+}
+
+body.tema-escuro {
+  --fundo: #241417;
+  --texto: #fff4ee;
+  --borda: #6b3a34;
+  --cinza: #e4b9a8;
+  background:
+    radial-gradient(circle at 18% 12%, rgba(232, 91, 42, .26) 0, transparent 32%),
+    radial-gradient(circle at 88% 8%, rgba(201, 51, 48, .32) 0, transparent 36%),
+    linear-gradient(135deg, #1f1114 0%, #2a1519 45%, #3a1d22 100%);
+  background-attachment: fixed;
+}
+
+body.tema-escuro .page-header-card,
+body.tema-escuro .table-panel,
+body.tema-escuro .form-panel,
+body.tema-escuro .metric-mini,
+body.tema-escuro .home-start-card,
+body.tema-escuro .home-action-card,
+body.tema-escuro .register-info-line,
+body.tema-escuro .card {
+  background: #351d22;
+}
+
+body.tema-escuro .table-toolbar,
+body.tema-escuro .planilha-table thead th {
+  background: #2b171b;
+}
+
+#acessibilidadeTema.ativo,
+.acessibilidade-botoes button.ativo {
+  background: var(--salmao);
+  color: #2d1d1f;
+}
+
+/* Correção: placeholders no tema escuro */
+body.tema-escuro .form-control::placeholder,
+body.tema-escuro textarea::placeholder,
+body.tema-escuro input::placeholder {
+  color: rgba(255, 244, 238, .72) !important;
+  opacity: 1;
+}
+
+body.tema-escuro .form-control,
+body.tema-escuro .form-select,
+body.tema-escuro textarea,
+body.tema-escuro input {
+  color: #fff4ee;
+}
+
+body.tema-escuro .form-select option {
+  background: #2a1519;
+  color: #fff4ee;
+}

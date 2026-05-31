@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/x-icon" href="/static/Imagens/CEI_Logo.ico">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+  <title>Painel inicial - Projeto Acolher</title>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="app-sidebar">
+      <a class="sidebar-logo" href="/">
+        <img src="/static/Imagens/CEI_Logo.png" alt="CEI">
+        <span>Projeto Acolher</span>
+      </a>
+
+      <nav class="sidebar-menu" aria-label="Menu principal">
+        <a class="sidebar-link active" href="/">Painel inicial</a>
+        <a class="sidebar-link" href="/doacao/">Doações</a>
+        <a class="sidebar-link" href="/registrar/">Registrar doação</a>
+        <a class="sidebar-link" href="/estoque/">Estoque</a>
+      </nav>
+
+      <a href="/login/" class="sidebar-login">Entrar</a>
+    </aside>
+
+    <main class="app-page home-page">
+      <section class="home-start-card">
+        <div class="home-start-logo">
+          <img src="/static/Imagens/CEI_Logo.png" alt="CEI">
+        </div>
+
+        <span class="page-kicker">Centro Evangelista Internacional</span>
+        <h1>Projeto Acolher</h1>
+        <p>
+          Use esse sistema para registrar doações, acompanhar o histórico e controlar os itens que ainda estão no estoque.
+        </p>
+
+        <div class="home-actions">
+          <a href="/registrar/" class="home-action-card">
+            <strong>Registrar doação</strong>
+            <span>Cadastrar uma nova doação</span>
+          </a>
+
+          <a href="/estoque/" class="home-action-card">
+            <strong>Estoque</strong>
+            <span>Editar, repassar ou excluir itens</span>
+          </a>
+
+          <a href="/doacao/" class="home-action-card">
+            <strong>Doações</strong>
+            <span>Consultar o histórico completo</span>
+          </a>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/static/script.js"></script>
+</body>
+</html>
