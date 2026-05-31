@@ -1,6 +1,6 @@
 const API_BASE_URL = "/api";
 
-// FUNÇÕES AUXILIARES ----------------------------------------------------------------------
+// FUNÇÕES BÁSICAS --------------------------------------------------------------------------------
 
 function formatarData(data) {
   if (!data) {
@@ -46,31 +46,25 @@ function mostrarMensagem(texto, tipo) {
   }, 3500);
 }
 
-async function apiFetch(caminho, opcoes = {}) {
-  let resposta = await fetch(API_BASE_URL + caminho, {
+async function apiFetch(caminho, metodo, dados) {
+  let opcoes = {
+    method: metodo || "GET",
     headers: {
       "Content-Type": "application/json"
-    },
-    ...opcoes
-  });
+    }
+  };
 
-  let dados = null;
-
-  try {
-    dados = await resposta.json();
-  } catch (erro) {
-    dados = null;
+  if (dados) {
+    opcoes.body = JSON.stringify(dados);
   }
 
-  if (!resposta.ok) {
-    if (dados && dados.erro) {
-      throw new Error(dados.erro);
-    }
+  let resposta = await fetch(API_BASE_URL + caminho, opcoes);
 
+  if (!resposta.ok) {
     throw new Error("Erro ao conectar com o backend.");
   }
 
-  return dados;
+  return await resposta.json();
 }
 
 function criarEstadoVazio(texto) {
@@ -115,7 +109,7 @@ function normalizarDataInput(data) {
   return texto;
 }
 
-// MODAL DE CONFIRMAÇÃO DO SISTEMA ---------------------------------------------------------
+// MODAL DE CONFIRMAÇÃO -----------------------------------------------------------------------
 
 function abrirModalConfirmacao(titulo, texto, funcaoConfirmar) {
   let modal = document.getElementById("modalConfirmacaoSistema");
@@ -124,14 +118,13 @@ function abrirModalConfirmacao(titulo, texto, funcaoConfirmar) {
     modal = document.createElement("div");
     modal.className = "modal fade";
     modal.id = "modalConfirmacaoSistema";
-    modal.tabIndex = -1;
 
     modal.innerHTML = `
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 rounded-4 shadow">
           <div class="modal-header">
             <h5 class="modal-title" id="confirmacaoTitulo">Confirmação</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
           </div>
 
           <div class="modal-body">
@@ -157,15 +150,15 @@ function abrirModalConfirmacao(titulo, texto, funcaoConfirmar) {
   document.getElementById("confirmacaoTitulo").textContent = titulo;
   document.getElementById("confirmacaoTexto").textContent = texto;
 
-  let botao = document.getElementById("confirmacaoBotao");
-
-  botao.onclick = async function () {
+  document.getElementById("confirmacaoBotao").onclick = async function () {
     await funcaoConfirmar();
     bootstrap.Modal.getInstance(modal).hide();
   };
 
   bootstrap.Modal.getOrCreateInstance(modal).show();
 }
+
+// REPASSAR ITEM ----------------------------------------------------------------------------------
 
 function abrirModalRepassar(item) {
   let modal = document.getElementById("modalRepassarItem");
@@ -174,32 +167,27 @@ function abrirModalRepassar(item) {
     modal = document.createElement("div");
     modal.className = "modal fade";
     modal.id = "modalRepassarItem";
-    modal.tabIndex = -1;
 
     modal.innerHTML = `
       <div class="modal-dialog modal-dialog-centered">
         <form class="modal-content border-0 rounded-4 shadow" id="formRepassarItem">
           <div class="modal-header">
-            <h5 class="modal-title">
-              Repassar item
-            </h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            <h5 class="modal-title">Repassar item</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
           </div>
 
           <div class="modal-body">
             <input type="hidden" id="repassarId">
 
-            <p class="mb-2">
-              Item: <strong id="repassarNome"></strong>
-            </p>
-
-            <p class="text-secondary small mb-3">
+            <p>Item: <strong id="repassarNome"></strong></p>
+            <p class="text-secondary small">
               Saldo disponível: <strong id="repassarSaldo"></strong>
             </p>
 
             <label for="repassarQuantidade" class="form-label fw-semibold">
-              Quantidade que será repassada
+              Quantidade repassada
             </label>
+
             <input type="number" min="1" id="repassarQuantidade" class="form-control" required>
           </div>
 
@@ -224,23 +212,22 @@ function abrirModalRepassar(item) {
       let id = document.getElementById("repassarId").value;
       let quantidade = Number(document.getElementById("repassarQuantidade").value);
 
-      if (!quantidade || quantidade <= 0) {
+      if (quantidade <= 0) {
         mostrarMensagem("Informe uma quantidade válida.", "erro");
         return;
       }
 
       try {
-        await apiFetch("/doacoes/" + id + "/repassar/", {
-          method: "POST",
-          body: JSON.stringify({
-            quantidade: quantidade
-          })
+        await apiFetch("/doacoes/" + id + "/repassar/", "POST", {
+          quantidade: quantidade
         });
 
         bootstrap.Modal.getInstance(modal).hide();
         mostrarMensagem("Repasse registrado com sucesso.");
+
         carregarEstoque();
         carregarDoacoes();
+        carregarPainelInicial();
 
       } catch (erro) {
         mostrarMensagem(erro.message, "erro");
@@ -257,7 +244,7 @@ function abrirModalRepassar(item) {
   bootstrap.Modal.getOrCreateInstance(modal).show();
 }
 
-// DOAÇÕES ----------------------------------------------------------------------
+// FORMULÁRIO DE DOAÇÃO -----------------------------------------------------------------------------------
 
 function pegarDadosFormularioDoacao() {
   return {
@@ -272,28 +259,68 @@ function pegarDadosFormularioDoacao() {
 }
 
 function validarDoacao(doacao) {
-  if (!doacao.doacao_item) {
+  if (doacao.doacao_item === "") {
     return false;
   }
 
-  if (!doacao.remetente) {
+  if (doacao.remetente === "") {
     return false;
   }
 
-  if (!doacao.quantidade || doacao.quantidade <= 0) {
+  if (doacao.quantidade <= 0) {
     return false;
   }
 
-  if (!doacao.tipo) {
+  if (doacao.tipo === "") {
     return false;
   }
 
-  if (!doacao.data) {
+  if (doacao.data === "") {
     return false;
   }
 
   return true;
 }
+
+function prepararFormularioDoacao() {
+  let formulario = document.getElementById("acaoSocialRegistrarDoacoesDiv");
+  let botao = document.getElementById("registrarDoacaoBotao");
+
+  if (!formulario || !botao) {
+    return;
+  }
+
+  formulario.addEventListener("submit", async function (evento) {
+    evento.preventDefault();
+
+    let dados = pegarDadosFormularioDoacao();
+
+    if (!validarDoacao(dados)) {
+      mostrarMensagem("Preencha doação, remetente, quantidade, tipo e data.", "erro");
+      return;
+    }
+
+    botao.disabled = true;
+    botao.textContent = "Registrando...";
+
+    try {
+      await apiFetch("/doacoes/", "POST", dados);
+
+      mostrarMensagem("Doação cadastrada com sucesso!");
+      formulario.reset();
+      document.getElementById("tipo").value = "Outros";
+
+    } catch (erro) {
+      mostrarMensagem(erro.message, "erro");
+
+    } finally {
+      botao.disabled = false;
+      botao.textContent = "Registrar Doação";
+    }
+  });
+}
+
+// TABELA DE DOAÇÕES ----------------------------------------------------------------------
 
 function criarTabelaDoacoes() {
   let tabela = document.createElement("table");
@@ -314,38 +341,41 @@ function criarTabelaDoacoes() {
         <th class="col-desc">Descrição</th>
       </tr>
     </thead>
+
     <tbody id="corpoTabelaDoacoes"></tbody>
   `;
 
   return tabela;
 }
 
-function criarCardDoacao(doacao) {
+function criarLinhaDoacao(doacao) {
   let linha = document.createElement("tr");
   linha.className = "record-card";
 
-  linha.dataset.busca = (
+  let busca =
     doacao.id + " " +
     doacao.doacao_item + " " +
     doacao.remetente + " " +
     doacao.cpf_cnpj + " " +
     doacao.status + " " +
     doacao.tipo + " " +
-    doacao.descricao
-  ).toLowerCase();
+    doacao.descricao;
 
-  linha.dataset.status = doacao.status || "";
-  linha.dataset.tipo = doacao.tipo || "";
+  linha.setAttribute("data-busca", busca.toLowerCase());
+  linha.setAttribute("data-status", doacao.status || "");
+  linha.setAttribute("data-tipo", doacao.tipo || "");
 
   let status = doacao.status || "Sem status";
   let statusClass = classeStatus(status);
 
   linha.innerHTML = `
     <td class="col-id">#${doacao.id || "-"}</td>
+
     <td class="col-item">
       ${doacao.doacao_item || "Doação sem nome"}
       <span class="item-subtext">CPF/CNPJ: ${doacao.cpf_cnpj || "-"}</span>
     </td>
+
     <td>${doacao.tipo || "Outros"}</td>
     <td>${doacao.remetente || "-"}</td>
     <td>${doacao.quantidade || 0}</td>
@@ -375,8 +405,6 @@ async function carregarDoacoes() {
   try {
     let doacoes = await apiFetch("/doacoes/");
 
-    atualizarTexto("totalDoacoes", doacoes.length);
-
     let quantidadeTotal = 0;
     let totalRepasses = 0;
 
@@ -385,19 +413,17 @@ async function carregarDoacoes() {
       totalRepasses += Number(doacoes[i].quantidade_repassada || 0);
     }
 
+    atualizarTexto("totalDoacoes", doacoes.length);
     atualizarTexto("quantidadeDoada", quantidadeTotal);
     atualizarTexto("totalRepasses", totalRepasses);
 
     if (doacoes.length === 0) {
       atualizarTexto("ultimaDoacao", "-");
-      atualizarTexto("totalRepasses", 0);
       lista.appendChild(criarEstadoVazio("Nenhuma doação registrada ainda."));
       return;
     }
 
-    let ultimaDoacao = doacoes[0];
-
-    atualizarTexto("ultimaDoacao", ultimaDoacao.doacao_item || "-");
+    atualizarTexto("ultimaDoacao", doacoes[0].doacao_item || "-");
 
     let tabela = criarTabelaDoacoes();
     lista.appendChild(tabela);
@@ -405,60 +431,17 @@ async function carregarDoacoes() {
     let corpo = document.getElementById("corpoTabelaDoacoes");
 
     for (let i = 0; i < doacoes.length; i++) {
-      corpo.appendChild(criarCardDoacao(doacoes[i]));
+      corpo.appendChild(criarLinhaDoacao(doacoes[i]));
     }
 
     ativarBusca();
 
   } catch (erro) {
-    lista.appendChild(
-      criarEstadoVazio("Não foi possível carregar as doações. Verifique se o Django está rodando.")
-    );
+    lista.appendChild(criarEstadoVazio("Não foi possível carregar as doações."));
   }
 }
 
-function prepararFormularioDoacao() {
-  let formulario = document.getElementById("acaoSocialRegistrarDoacoesDiv");
-  let botao = document.getElementById("registrarDoacaoBotao");
-
-  if (!formulario || !botao) {
-    return;
-  }
-
-  formulario.addEventListener("submit", async function (evento) {
-    evento.preventDefault();
-
-    let dados = pegarDadosFormularioDoacao();
-
-    if (!validarDoacao(dados)) {
-      mostrarMensagem("Preencha doação, remetente, quantidade, tipo e data.", "erro");
-      return;
-    }
-
-    botao.disabled = true;
-    botao.textContent = "Registrando...";
-
-    try {
-      await apiFetch("/doacoes/", {
-        method: "POST",
-        body: JSON.stringify(dados)
-      });
-
-      mostrarMensagem("Doação cadastrada com sucesso!");
-      formulario.reset();
-      document.getElementById("tipo").value = "Outros";
-
-    } catch (erro) {
-      mostrarMensagem(erro.message, "erro");
-
-    } finally {
-      botao.disabled = false;
-      botao.textContent = "Registrar Doação";
-    }
-  });
-}
-
-// MODAL DE EDIÇÃO DO ESTOQUE -------------------------------------------------------------
+// MODAL DE EDIÇÃO DO ESTOQUE --------------------------------------------------------------------
 
 function abrirModalEdicaoDoacao(doacao) {
   let modal = document.getElementById("modalEditarDoacao");
@@ -469,124 +452,6 @@ function abrirModalEdicaoDoacao(doacao) {
     configurarFormularioEdicao(modal);
   }
 
-  preencherModalEdicao(doacao);
-
-  let modalBootstrap = bootstrap.Modal.getOrCreateInstance(modal);
-  modalBootstrap.show();
-}
-
-function criarModalEdicaoDoacao() {
-  let modal = document.createElement("div");
-
-  modal.className = "modal fade";
-  modal.id = "modalEditarDoacao";
-  modal.tabIndex = -1;
-
-  modal.innerHTML = `
-    <div class="modal-dialog modal-dialog-centered">
-
-      <form class="modal-content border-0 rounded-4 shadow" id="formEditarDoacao">
-
-        <div class="modal-header">
-          <h5 class="modal-title">
-            Editar item do estoque
-          </h5>
-
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
-        </div>
-
-        <div class="modal-body">
-
-          <input type="hidden" id="editarDoacaoId">
-
-          <div class="mb-3">
-            <label class="form-label fw-semibold" for="editarDoacaoItem">
-              Doação
-            </label>
-
-            <input class="form-control" id="editarDoacaoItem" required>
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label fw-semibold" for="editarRemetente">
-              Remetente
-            </label>
-
-            <input class="form-control" id="editarRemetente" required>
-          </div>
-
-          <div class="row g-3">
-
-            <div class="col-md-6">
-              <label class="form-label fw-semibold" for="editarQuantidade">
-                Quantidade
-              </label>
-
-              <input class="form-control" id="editarQuantidade" type="number" min="1" required>
-            </div>
-
-            <div class="col-md-6">
-              <label class="form-label fw-semibold" for="editarCpfCnpj">
-                CPF/CNPJ
-              </label>
-
-              <input class="form-control" id="editarCpfCnpj">
-            </div>
-
-            <div class="col-md-6">
-              <label class="form-label fw-semibold" for="editarTipo">
-                Tipo de doação
-              </label>
-
-              <select class="form-select" id="editarTipo" required>
-                <option value="Alimento">Alimento</option>
-                <option value="Roupa">Roupa</option>
-                <option value="Outros">Outros</option>
-              </select>
-            </div>
-
-            <div class="col-md-6">
-              <label class="form-label fw-semibold" for="editarData">
-                Data
-              </label>
-
-              <input class="form-control" id="editarData" type="date" required>
-            </div>
-
-            <div class="col-12">
-              <label class="form-label fw-semibold" for="editarDescricao">
-                Descrição
-              </label>
-
-              <textarea class="form-control" id="editarDescricao" rows="3"></textarea>
-            </div>
-
-          </div>
-
-          <p class="text-secondary small mt-3 mb-0">
-            O status não é editado manualmente. Ele muda sozinho quando houver repasse.
-          </p>
-        </div>
-
-        <div class="modal-footer">
-
-          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-            Cancelar
-          </button>
-
-          <button type="submit" class="btn btn-primary fw-semibold">
-            Salvar alterações
-          </button>
-
-        </div>
-      </form>
-    </div>
-  `;
-
-  return modal;
-}
-
-function preencherModalEdicao(doacao) {
   document.getElementById("editarDoacaoId").value = doacao.id;
   document.getElementById("editarDoacaoItem").value = doacao.doacao_item || "";
   document.getElementById("editarRemetente").value = doacao.remetente || "";
@@ -595,18 +460,88 @@ function preencherModalEdicao(doacao) {
   document.getElementById("editarTipo").value = doacao.tipo || "Outros";
   document.getElementById("editarDescricao").value = doacao.descricao || "";
   document.getElementById("editarData").value = normalizarDataInput(doacao.data);
+
+  bootstrap.Modal.getOrCreateInstance(modal).show();
 }
 
-function pegarDadosModalEdicao() {
-  return {
-    doacao_item: document.getElementById("editarDoacaoItem").value.trim(),
-    remetente: document.getElementById("editarRemetente").value.trim(),
-    quantidade: Number(document.getElementById("editarQuantidade").value),
-    cpf_cnpj: document.getElementById("editarCpfCnpj").value.trim(),
-    tipo: document.getElementById("editarTipo").value,
-    descricao: document.getElementById("editarDescricao").value.trim(),
-    data: document.getElementById("editarData").value
-  };
+function criarModalEdicaoDoacao() {
+  let modal = document.createElement("div");
+  modal.className = "modal fade";
+  modal.id = "modalEditarDoacao";
+
+  modal.innerHTML = `
+    <div class="modal-dialog modal-dialog-centered">
+      <form class="modal-content border-0 rounded-4 shadow" id="formEditarDoacao">
+
+        <div class="modal-header">
+          <h5 class="modal-title">Editar item do estoque</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+
+        <div class="modal-body">
+          <input type="hidden" id="editarDoacaoId">
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Doação</label>
+            <input class="form-control" id="editarDoacaoItem" required>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Remetente</label>
+            <input class="form-control" id="editarRemetente" required>
+          </div>
+
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Quantidade</label>
+              <input class="form-control" id="editarQuantidade" type="number" min="1" required>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">CPF/CNPJ</label>
+              <input class="form-control" id="editarCpfCnpj">
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Tipo</label>
+              <select class="form-select" id="editarTipo" required>
+                <option value="Alimento">Alimento</option>
+                <option value="Roupa">Roupa</option>
+                <option value="Outros">Outros</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Data</label>
+              <input class="form-control" id="editarData" type="date" required>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label fw-semibold">Descrição</label>
+              <textarea class="form-control" id="editarDescricao" rows="3"></textarea>
+            </div>
+          </div>
+
+          <p class="text-secondary small mt-3 mb-0">
+            O status muda sozinho de acordo com os repasses.
+          </p>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+            Cancelar
+          </button>
+
+          <button type="submit" class="btn btn-primary fw-semibold">
+            Salvar alterações
+          </button>
+        </div>
+
+      </form>
+    </div>
+  `;
+
+  return modal;
 }
 
 function configurarFormularioEdicao(modal) {
@@ -616,7 +551,16 @@ function configurarFormularioEdicao(modal) {
     evento.preventDefault();
 
     let id = document.getElementById("editarDoacaoId").value;
-    let dados = pegarDadosModalEdicao();
+
+    let dados = {
+      doacao_item: document.getElementById("editarDoacaoItem").value.trim(),
+      remetente: document.getElementById("editarRemetente").value.trim(),
+      quantidade: Number(document.getElementById("editarQuantidade").value),
+      cpf_cnpj: document.getElementById("editarCpfCnpj").value.trim(),
+      tipo: document.getElementById("editarTipo").value,
+      descricao: document.getElementById("editarDescricao").value.trim(),
+      data: document.getElementById("editarData").value
+    };
 
     if (!validarDoacao(dados)) {
       mostrarMensagem("Preencha todos os campos obrigatórios.", "erro");
@@ -624,17 +568,15 @@ function configurarFormularioEdicao(modal) {
     }
 
     try {
-      await apiFetch("/doacoes/" + id + "/", {
-        method: "PATCH",
-        body: JSON.stringify(dados)
-      });
+      await apiFetch("/doacoes/" + id + "/", "PATCH", dados);
 
       bootstrap.Modal.getInstance(modal).hide();
 
-      mostrarMensagem("Item do estoque editado com sucesso.");
+      mostrarMensagem("Item editado com sucesso.");
 
-      carregarDoacoes();
       carregarEstoque();
+      carregarDoacoes();
+      carregarPainelInicial();
 
     } catch (erro) {
       mostrarMensagem(erro.message, "erro");
@@ -642,7 +584,7 @@ function configurarFormularioEdicao(modal) {
   });
 }
 
-// ESTOQUE ----------------------------------------------------------------------
+// TABELA DE ESTOQUE -------------------------------------------------------------------------------
 
 function criarTabelaEstoque() {
   let tabela = document.createElement("table");
@@ -664,38 +606,41 @@ function criarTabelaEstoque() {
         <th class="col-actions">Ações</th>
       </tr>
     </thead>
+
     <tbody id="corpoTabelaEstoque"></tbody>
   `;
 
   return tabela;
 }
 
-function criarCardEstoque(item) {
+function criarLinhaEstoque(item) {
   let linha = document.createElement("tr");
   linha.className = "record-card";
 
-  linha.dataset.busca = (
+  let busca =
     item.id + " " +
     item.doacao_item + " " +
     item.remetente + " " +
     item.cpf_cnpj + " " +
     item.status + " " +
     item.tipo + " " +
-    item.descricao
-  ).toLowerCase();
+    item.descricao;
 
-  linha.dataset.status = item.status || "";
-  linha.dataset.tipo = item.tipo || "";
+  linha.setAttribute("data-busca", busca.toLowerCase());
+  linha.setAttribute("data-status", item.status || "");
+  linha.setAttribute("data-tipo", item.tipo || "");
 
   let status = item.status || "Sem status";
   let statusClass = classeStatus(status);
 
   linha.innerHTML = `
     <td class="col-id">#${item.id || "-"}</td>
+
     <td class="col-item">
       ${item.doacao_item || "Item sem nome"}
       <span class="item-subtext">CPF/CNPJ: ${item.cpf_cnpj || "-"}</span>
     </td>
+
     <td>${item.tipo || "Outros"}</td>
     <td>${item.remetente || "-"}</td>
     <td>${item.quantidade || 0}</td>
@@ -704,6 +649,7 @@ function criarCardEstoque(item) {
     <td><span class="badge status-pill ${statusClass}">${status}</span></td>
     <td>${formatarData(item.data)}</td>
     <td class="col-desc">${item.descricao || "-"}</td>
+
     <td class="col-actions">
       <button class="btn btn-outline-primary btn-table btn-editar-estoque" type="button">Editar</button>
       <button class="btn btn-outline-success btn-table btn-repassar-estoque" type="button">Repassar</button>
@@ -711,38 +657,27 @@ function criarCardEstoque(item) {
     </td>
   `;
 
-  let botaoEditar = linha.querySelector(".btn-editar-estoque");
-  let botaoRepassar = linha.querySelector(".btn-repassar-estoque");
-  let botaoApagar = linha.querySelector(".btn-apagar-estoque");
-
-  botaoEditar.addEventListener("click", function () {
+  linha.querySelector(".btn-editar-estoque").onclick = function () {
     abrirModalEdicaoDoacao(item);
-  });
+  };
 
-  botaoRepassar.addEventListener("click", function () {
+  linha.querySelector(".btn-repassar-estoque").onclick = function () {
     abrirModalRepassar(item);
-  });
+  };
 
-  botaoApagar.addEventListener("click", function () {
+  linha.querySelector(".btn-apagar-estoque").onclick = function () {
     abrirModalConfirmacao(
       "Excluir item",
       "Tem certeza que deseja excluir este item? Use apenas quando o cadastro estiver errado.",
       async function () {
-        try {
-          await apiFetch("/doacoes/" + item.id + "/", {
-            method: "DELETE"
-          });
-
-          mostrarMensagem("Item excluído com sucesso.");
-          carregarEstoque();
-          carregarDoacoes();
-
-        } catch (erro) {
-          mostrarMensagem(erro.message, "erro");
-        }
+        await apiFetch("/doacoes/" + item.id + "/", "DELETE");
+        mostrarMensagem("Item excluído com sucesso.");
+        carregarEstoque();
+        carregarDoacoes();
+        carregarPainelInicial();
       }
     );
-  });
+  };
 
   return linha;
 }
@@ -768,15 +703,16 @@ async function carregarEstoque() {
     let saldoGeral = 0;
 
     for (let i = 0; i < itens.length; i++) {
+      let saldo = Number(itens[i].saldo || 0);
+      saldoGeral += saldo;
+
       if (itens[i].status === "Recebido") {
-        totalRecebido += Number(itens[i].saldo || 0);
+        totalRecebido += saldo;
       }
 
       if (itens[i].status === "Processando") {
-        totalProcessando += Number(itens[i].saldo || 0);
+        totalProcessando += saldo;
       }
-
-      saldoGeral += Number(itens[i].saldo || 0);
     }
 
     atualizarTexto("totalItens", saldoGeral);
@@ -794,19 +730,17 @@ async function carregarEstoque() {
     let corpo = document.getElementById("corpoTabelaEstoque");
 
     for (let i = 0; i < itens.length; i++) {
-      corpo.appendChild(criarCardEstoque(itens[i]));
+      corpo.appendChild(criarLinhaEstoque(itens[i]));
     }
 
     ativarBusca();
 
   } catch (erro) {
-    lista.appendChild(
-      criarEstadoVazio("Não foi possível carregar o estoque. Verifique se o Django está rodando.")
-    );
+    lista.appendChild(criarEstadoVazio("Não foi possível carregar o estoque."));
   }
 }
 
-// BUSCA// BUSCA ----------------------------------------------------------------------
+// BUSCA E FILTROS -------------------------------------------------------------------------
 
 function ativarBusca() {
   let campoBusca = document.getElementById("buscaItens");
@@ -819,19 +753,36 @@ function ativarBusca() {
   }
 
   function filtrarTabela() {
-    let termo = campoBusca ? campoBusca.value.trim().toLowerCase() : "";
-    let status = filtroStatus ? filtroStatus.value : "";
-    let tipo = filtroTipo ? filtroTipo.value : "";
+    let termo = "";
+    let status = "";
+    let tipo = "";
+
+    if (campoBusca) {
+      termo = campoBusca.value.trim().toLowerCase();
+    }
+
+    if (filtroStatus) {
+      status = filtroStatus.value;
+    }
+
+    if (filtroTipo) {
+      tipo = filtroTipo.value;
+    }
 
     let linhas = lista.querySelectorAll(".record-card");
 
     for (let i = 0; i < linhas.length; i++) {
       let linha = linhas[i];
-      let bateBusca = linha.dataset.busca.includes(termo);
-      let bateStatus = !status || linha.dataset.status === status;
-      let bateTipo = !tipo || linha.dataset.tipo === tipo;
 
-      if (bateBusca && bateStatus && bateTipo) {
+      let buscaLinha = linha.getAttribute("data-busca");
+      let statusLinha = linha.getAttribute("data-status");
+      let tipoLinha = linha.getAttribute("data-tipo");
+
+      let passouBusca = buscaLinha.includes(termo);
+      let passouStatus = status === "" || statusLinha === status;
+      let passouTipo = tipo === "" || tipoLinha === tipo;
+
+      if (passouBusca && passouStatus && passouTipo) {
         linha.style.display = "";
       } else {
         linha.style.display = "none";
@@ -852,8 +803,7 @@ function ativarBusca() {
   }
 }
 
-
-// PAINEL INICIAL ----------------------------------------------------------------------
+// PAINEL INICIAL ------------------------------------------------------------------------------
 
 function criarLinhaPainel(doacao) {
   let linha = document.createElement("div");
@@ -867,6 +817,7 @@ function criarLinhaPainel(doacao) {
       <strong>${doacao.doacao_item || "Doação sem nome"}</strong>
       <span>${doacao.remetente || "-"} · ${doacao.tipo || "Outros"}</span>
     </div>
+
     <div class="compact-meta">${formatarData(doacao.data)}</div>
     <span class="badge status-pill ${statusClass}">${status}</span>
   `;
@@ -924,10 +875,10 @@ async function carregarPainelInicial() {
 
     atualizarTexto("painelUltimaDoacao", doacoes[0].doacao_item || "-");
 
-    let limite = doacoes.length;
+    let limite = 6;
 
-    if (limite > 6) {
-      limite = 6;
+    if (doacoes.length < 6) {
+      limite = doacoes.length;
     }
 
     for (let i = 0; i < limite; i++) {
@@ -939,15 +890,15 @@ async function carregarPainelInicial() {
   }
 }
 
-
-
-// ACESSIBILIDADE -------------------------------------------------------------
+// ACESSIBILIDADE ------------------------------------------------------------------------------
 
 function aplicarPreferenciasAcessibilidade() {
   let tema = localStorage.getItem("temaAcolher") || "claro";
   let fonte = localStorage.getItem("fonteAcolher") || "normal";
 
-  document.body.classList.remove("tema-escuro", "fonte-maior", "fonte-extra");
+  document.body.classList.remove("tema-escuro");
+  document.body.classList.remove("fonte-maior");
+  document.body.classList.remove("fonte-extra");
 
   if (tema === "escuro") {
     document.body.classList.add("tema-escuro");
@@ -965,16 +916,28 @@ function aplicarPreferenciasAcessibilidade() {
 function atualizarBotoesAcessibilidade() {
   let tema = localStorage.getItem("temaAcolher") || "claro";
   let fonte = localStorage.getItem("fonteAcolher") || "normal";
+
   let botaoTema = document.getElementById("acessibilidadeTema");
 
   if (botaoTema) {
-    botaoTema.classList.toggle("ativo", tema === "escuro");
-    botaoTema.textContent = tema === "escuro" ? "Tema claro" : "Tema escuro";
+    if (tema === "escuro") {
+      botaoTema.textContent = "Tema claro";
+    } else {
+      botaoTema.textContent = "Tema escuro";
+    }
   }
 
-  document.querySelectorAll("[data-fonte]").forEach(function (botao) {
-    botao.classList.toggle("ativo", botao.dataset.fonte === fonte);
-  });
+  let botoesFonte = document.querySelectorAll("[data-fonte]");
+
+  for (let i = 0; i < botoesFonte.length; i++) {
+    let botao = botoesFonte[i];
+
+    if (botao.getAttribute("data-fonte") === fonte) {
+      botao.classList.add("ativo");
+    } else {
+      botao.classList.remove("ativo");
+    }
+  }
 }
 
 function criarAcessibilidade() {
@@ -991,7 +954,7 @@ function criarAcessibilidade() {
 
     <button type="button" id="acessibilidadeTema">Tema escuro</button>
 
-    <div class="acessibilidade-botoes" aria-label="Tamanho da fonte">
+    <div class="acessibilidade-botoes">
       <button type="button" data-fonte="normal">A</button>
       <button type="button" data-fonte="maior">A+</button>
       <button type="button" data-fonte="extra">A++</button>
@@ -1004,11 +967,10 @@ function criarAcessibilidade() {
   if (menuLateral && botaoLogin) {
     menuLateral.insertBefore(caixa, botaoLogin);
   } else {
-    caixa.classList.add("login-acessibilidade");
     document.body.appendChild(caixa);
   }
 
-  document.getElementById("acessibilidadeTema").addEventListener("click", function () {
+  document.getElementById("acessibilidadeTema").onclick = function () {
     let temaAtual = localStorage.getItem("temaAcolher") || "claro";
 
     if (temaAtual === "escuro") {
@@ -1019,21 +981,23 @@ function criarAcessibilidade() {
 
     aplicarPreferenciasAcessibilidade();
     atualizarBotoesAcessibilidade();
-  });
+  };
 
-  document.querySelectorAll("[data-fonte]").forEach(function (botao) {
-    botao.addEventListener("click", function () {
-      localStorage.setItem("fonteAcolher", botao.dataset.fonte);
+  let botoesFonte = document.querySelectorAll("[data-fonte]");
+
+  for (let i = 0; i < botoesFonte.length; i++) {
+    botoesFonte[i].onclick = function () {
+      localStorage.setItem("fonteAcolher", this.getAttribute("data-fonte"));
       aplicarPreferenciasAcessibilidade();
       atualizarBotoesAcessibilidade();
-    });
-  });
+    };
+  }
 
   aplicarPreferenciasAcessibilidade();
   atualizarBotoesAcessibilidade();
 }
 
-// LOGIN SIMPLES// LOGIN SIMPLES ----------------------------------------------------------------------
+// LOGIN ------------------------------------------------------------------------------------
 
 function prepararLoginSimples() {
   let formulario = document.querySelector("#loginBody form");
@@ -1066,14 +1030,16 @@ function prepararLoginSimples() {
   });
 }
 
-// INICIALIZAÇÃO ----------------------------------------------------------------------
+// INICIALIZAÇÃO ---------------------------------------------------------------------------
 
 document.addEventListener("DOMContentLoaded", function () {
   aplicarPreferenciasAcessibilidade();
   criarAcessibilidade();
+
   carregarPainelInicial();
   carregarDoacoes();
   carregarEstoque();
+
   prepararFormularioDoacao();
   prepararLoginSimples();
 });
