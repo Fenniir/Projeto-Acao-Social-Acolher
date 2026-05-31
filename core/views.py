@@ -9,6 +9,7 @@ from django.shortcuts import render
 from .models import Doacao
 from django.utils import timezone
 
+LIMITE_DESCRICAO = 250
 
 # ── Proteção de API ───────────────────────────────────────────────────────────
 
