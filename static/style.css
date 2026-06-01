@@ -14,7 +14,6 @@
 
 body {
   min-height: 100vh;
-  overflow: hidden;
   color: var(--texto);
   font-size: 14px;
   background:
