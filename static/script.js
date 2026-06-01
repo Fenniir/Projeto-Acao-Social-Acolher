@@ -81,8 +81,11 @@ async function apiFetch(caminho, metodo, dados) {
   let resposta = await fetch(API_BASE_URL + caminho, opcoes);
 
   if (resposta.status === 401) {
-    window.location.href = "/login/";
-    return;
+    if (window.location.pathname !== "/login/") {
+      window.location.href = "/login/";
+      return;
+    }
+    throw new Error("Usuário ou senha incorretos.");
   }
 
   if (!resposta.ok) {
@@ -681,7 +684,7 @@ function criarLinhaEstoque(item) {
           mostrarMensagem("Item excluído com sucesso.");
           carregarEstoque();
           carregarDoacoes();
-            } catch (erro) {
+        } catch (erro) {
           mostrarMensagem(erro.message, "erro");
         }
       }
